@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import '../models/receta.dart';
 import '../data/recetas_semilla.dart';
+import 'detalle_receta.dart'; 
 
-class PantallaRecetas extends StatelessWidget {
+class PantallaRecetas extends StatefulWidget { 
   const PantallaRecetas({super.key});
+
+  @override
+  State<PantallaRecetas> createState() => _PantallaRecetasState();
+}
+
+class _PantallaRecetasState extends State<PantallaRecetas> {
+  final List<Receta> _listaRecetas = List.from(recetasSemilla);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recetario'),
+        title: const Text('Mi Recetario'),
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(10.0),
@@ -19,9 +27,9 @@ class PantallaRecetas extends StatelessWidget {
           mainAxisSpacing: 10,
           childAspectRatio: 0.8,
         ),
-        itemCount: recetasSemilla.length,
+        itemCount: _listaRecetas.length,
         itemBuilder: (context, index) {
-          final receta = recetasSemilla[index];
+          final receta = _listaRecetas[index];
 
           return Card(
             elevation: 3,
@@ -29,74 +37,84 @@ class PantallaRecetas extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
               side: receta.destacada
-                  ? const BorderSide(color: Colors.amber, width: 2) 
+                  ? const BorderSide(color: Colors.amber, width: 2)
                   : BorderSide.none,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(receta.colorInicio), Color(receta.colorFin)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetalleReceta(receta: receta),
+                  ),
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(receta.colorInicio), Color(receta.colorFin)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                       ),
-                    ),
-                    child: Stack(
-                      children: [
-                        if (receta.destacada)
-                          const Positioned(
-                            top: 8,
-                            left: 8,
-                            child: Icon(Icons.star, color: Colors.amber, size: 20),
-                          ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              receta.nombre,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                shadows: [Shadow(blurRadius: 3, color: Colors.black45)],
+                      child: Stack(
+                        children: [
+                          if (receta.destacada)
+                            const Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Icon(Icons.star, color: Colors.amber, size: 20),
+                            ),
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                receta.nombre,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  shadows: [Shadow(blurRadius: 3, color: Colors.black45)],
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Chip(
-                          label: Text(receta.categoria, style: const TextStyle(fontSize: 10)),
-                          padding: EdgeInsets.zero,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${receta.tiempoMin} min', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            Text('${receta.porciones} porc.', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                      ],
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Chip(
+                            label: Text(receta.categoria, style: const TextStyle(fontSize: 10)),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('${receta.tiempoMin} min', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              Text('${receta.porciones} porc.', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
