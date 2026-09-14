@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/receta.dart';
 import '../data/recetas_semilla.dart';
 import 'detalle_receta.dart';
+import 'formulario_receta.dart'; // Importa el formulario
 
 class PantallaRecetas extends StatefulWidget {
   const PantallaRecetas({super.key});
@@ -12,12 +13,32 @@ class PantallaRecetas extends StatefulWidget {
 
 class _PantallaRecetasState extends State<PantallaRecetas> {
   final List<Receta> _listaRecetas = List.from(recetasSemilla);
-  final Set<int> _favoritos = {}; // Almacena los IDs de las recetas favoritas
-  bool _soloFavoritos = false;     // Estado del filtro
+  final Set<int> _favoritos = {};
+  bool _soloFavoritos = false;
+
+  void _eliminarReceta(Receta receta) {
+    setState(() {
+      _listaRecetas.removeWhere((r) => r.id == receta.id);
+      _favoritos.remove(receta.id);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Se eliminó "${receta.nombre}"'),
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            setState(() {
+              _listaRecetas.add(receta);
+            });
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Filtrar la lista según el estado actual del filtro de favoritos
     final recetasMostradas = _soloFavoritos
         ? _listaRecetas.where((r) => _favoritos.contains(r.id)).toList()
         : _listaRecetas;
@@ -26,7 +47,6 @@ class _PantallaRecetasState extends State<PantallaRecetas> {
       appBar: AppBar(
         title: Text('Recetario (${_favoritos.length} favs)'),
         actions: [
-          // Botón en la AppBar para alternar entre todas y solo favoritas
           IconButton(
             icon: Icon(
               _soloFavoritos ? Icons.favorite : Icons.favorite_border,
@@ -44,7 +64,7 @@ class _PantallaRecetasState extends State<PantallaRecetas> {
       body: recetasMostradas.isEmpty
           ? const Center(
               child: Text(
-                'No hay recetas favoritas guardadas',
+                'No hay recetas disponibles',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
@@ -100,7 +120,6 @@ class _PantallaRecetasState extends State<PantallaRecetas> {
                                     left: 8,
                                     child: Icon(Icons.star, color: Colors.amber, size: 20),
                                   ),
-                                // Botón de favorito individual dentro de cada tarjeta
                                 Positioned(
                                   top: 4,
                                   right: 4,
@@ -118,6 +137,15 @@ class _PantallaRecetasState extends State<PantallaRecetas> {
                                         }
                                       });
                                     },
+                                  ),
+                                ),
+                                // Botón rápido de eliminar en la esquina inferior derecha de la portada o tarjeta
+                                Positioned(
+                                  bottom: 4,
+                                  right: 4,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.white70, size: 20),
+                                    onPressed: () => _eliminarReceta(receta),
                                   ),
                                 ),
                                 Center(
@@ -169,6 +197,27 @@ class _PantallaRecetasState extends State<PantallaRecetas> {
                 );
               },
             ),
+      // Botón flotante para agregar receta (Tarea 5)
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final nuevaReceta = await Navigator.push<Receta>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FormularioReceta(),
+            ),
+          );
+
+          if (nuevaReceta != null) {
+            setState(() {
+              _listaRecetas.add(nuevaReceta);
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Receta "${nuevaReceta.nombre}" agregada con éxito')),
+            );
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

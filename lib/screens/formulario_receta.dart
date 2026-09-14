@@ -10,49 +10,24 @@ class FormularioReceta extends StatefulWidget {
 
 class _FormularioRecetaState extends State<FormularioReceta> {
   final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
-  final _tiempoController = TextEditingController();
-  final _porcionesController = TextEditingController();
-  final _descripcionController = TextEditingController();
   
-  String _categoriaSeleccionada = 'Almuerzo';
-  String _dificultadSeleccionada = 'Media';
+  // Controladores para los campos del formulario
+  String _nombre = '';
+  String _categoria = 'Almuerzo';
+  int _tiempoMin = 30;
+  int _porciones = 4;
+  String _dificultad = 'Media';
+  String _descripcion = '';
 
-  final List<String> _categorias = ['Desayuno', 'Almuerzo', 'Cena', 'Postre', 'Bebida'];
+  final List<String> _categorias = ['Desayuno', 'Almuerzo', 'Cena', 'Postre'];
   final List<String> _dificultades = ['Facil', 'Media', 'Dificil'];
-
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _tiempoController.dispose();
-    _porcionesController.dispose();
-    _descripcionController.dispose();
-    super.dispose();
-  }
-
-  void _guardarReceta() {
-    if (_formKey.currentState!.validate()) {
-      final nuevaReceta = Receta(
-        id: DateTime.now().millisecondsSinceEpoch,
-        nombre: _nombreController.text.trim(),
-        categoria: _categoriaSeleccionada,
-        tiempoMin: int.parse(_tiempoController.text.trim()),
-        porciones: int.parse(_porcionesController.text.trim()),
-        dificultad: _dificultadSeleccionada,
-        destacada: false,
-        colorInicio: 0xFF3B82F6, // Color predeterminado para nuevas recetas
-        colorFin: 0xFF1D4ED8,
-        descripcion: _descripcionController.text.trim(),
-      );
-
-      Navigator.pop(context, nuevaReceta);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nueva Receta')),
+      appBar: AppBar(
+        title: const Text('Nueva Receta'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -60,68 +35,107 @@ class _FormularioRecetaState extends State<FormularioReceta> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _nombreController,
-                decoration: const InputDecoration(labelText: 'Nombre de la receta', border: OutlineInputBorder()),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Ingrese un nombre obligatorio' : null,
+                decoration: const InputDecoration(labelText: 'Nombre de la receta'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor ingresa un nombre';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _nombre = value!,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _categoriaSeleccionada,
-                decoration: const InputDecoration(labelText: 'Categoría', border: OutlineInputBorder()),
-                items: _categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (val) => setState(() => _categoriaSeleccionada = val!),
+                value: _categoria,
+                decoration: const InputDecoration(labelText: 'Categoría'),
+                items: _categorias.map((cat) {
+                  return DropdownMenuItem(value: cat, child: Text(cat));
+                }).toList(),
+                onChanged: (value) => setState(() => _categoria = value!),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
-                      controller: _tiempoController,
+                      decoration: const InputDecoration(labelText: 'Tiempo (min)'),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Tiempo (min)', border: OutlineInputBorder()),
-                      validator: (val) {
-                        if (val == null || val.isEmpty) return 'Requerido';
-                        final n = int.tryParse(val);
-                        if (n == null || n <= 0) return 'Número > 0';
+                      initialValue: '30',
+                      validator: (value) {
+                        if (value == null || int.tryParse(value) == null) {
+                          return 'Ingresa un número válido';
+                        }
                         return null;
                       },
+                      onSaved: (value) => _tiempoMin = int.parse(value!),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: TextFormField(
-                      controller: _porcionesController,
+                      decoration: const InputDecoration(labelText: 'Porciones'),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Porciones', border: OutlineInputBorder()),
-                      validator: (val) {
-                        if (val == null || val.isEmpty) return 'Requerido';
-                        final n = int.tryParse(val);
-                        if (n == null || n <= 0) return 'Número > 0';
+                      initialValue: '4',
+                      validator: (value) {
+                        if (value == null || int.tryParse(value) == null) {
+                          return 'Ingresa un número válido';
+                        }
                         return null;
                       },
+                      onSaved: (value) => _porciones = int.parse(value!),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _dificultadSeleccionada,
-                decoration: const InputDecoration(labelText: 'Dificultad', border: OutlineInputBorder()),
-                items: _dificultades.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                onChanged: (val) => setState(() => _dificultadSeleccionada = val!),
+                value: _dificultad,
+                decoration: const InputDecoration(labelText: 'Dificultad'),
+                items: _dificultades.map((dif) {
+                  return DropdownMenuItem(value: dif, child: Text(dif));
+                }).toList(),
+                onChanged: (value) => setState(() => _dificultad = value!),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               TextFormField(
-                controller: _descripcionController,
+                decoration: const InputDecoration(labelText: 'Descripción'),
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Descripción', border: OutlineInputBorder()),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Ingrese una descripción' : null,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Ingresa una breve descripción';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _descripcion = value!,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _guardarReceta,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                child: const Text('Guardar Receta', style: TextStyle(fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    
+                    // Creamos la nueva receta con colores por defecto
+                    final nuevaReceta = Receta(
+                      id: DateTime.now().millisecondsSinceEpoch,
+                      nombre: _nombre,
+                      categoria: _categoria,
+                      tiempoMin: _tiempoMin,
+                      porciones: _porciones,
+                      dificultad: _dificultad,
+                      destacada: false,
+                      colorInicio: 0xFF0284C7,
+                      colorFin: 0xFF0369A1,
+                      descripcion: _descripcion,
+                    );
+
+                    // Retornamos la receta a la pantalla anterior
+                    Navigator.pop(context, nuevaReceta);
+                  }
+                },
+                child: const Text('Guardar Receta'),
               ),
             ],
           ),
